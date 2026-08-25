@@ -38,8 +38,9 @@ Controlado por uma única variável, `VITE_PLANO`, definida por cliente na Verce
 ## Pro (+ tudo do Intermediário)
 
 - **Aba Clientes**: lista de todo mundo que já agendou, busca por nome/telefone, exportar contatos (.vcf)
+- **Clientes inativos**: alerta automático de quem não volta há 60+ dias, com atalho direto pro WhatsApp — ferramenta de reengajamento
 - **Aniversário do cliente**: campo no cadastro + aviso no painel quando o aniversário de alguém tá chegando (e notificação push, se configurada)
-- **Pacotes de serviço com restrição de dia** (ex: um combo que só vale de segunda a quarta) — recurso já existe no banco de dados, mas hoje só é configurado por mim direto no banco; não tem uma tela no painel pra isso ainda
+- **Pacotes de serviço com restrição de dia** (ex: um combo que só vale de segunda a quarta) — configurado direto no painel, na aba Serviços
 
 ---
 

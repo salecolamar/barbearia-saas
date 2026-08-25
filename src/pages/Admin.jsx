@@ -4,6 +4,7 @@ import {
   arrayUnion,
   collection,
   deleteDoc,
+  deleteField,
   doc,
   getDoc,
   getDocs,
@@ -952,6 +953,17 @@ function ClientesTab() {
       .sort((a, b) => a.dias - b.dias);
   }, [clientes]);
 
+  const clientesInativos = useMemo(() => {
+    if (!clientes) return [];
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+    return clientes
+      .filter((c) => c.visitas > 0 && c.ultima && c.ultima !== '0000-00-00')
+      .map((c) => ({ ...c, diasInativo: Math.round((hoje - new Date(`${c.ultima}T00:00:00`)) / 86400000) }))
+      .filter((c) => c.diasInativo >= 60)
+      .sort((a, b) => b.diasInativo - a.diasInativo);
+  }, [clientes]);
+
   async function salvarAniversario(telefone) {
     if (!aniversarioEdit) return;
     setSalvandoAniversario(true);
@@ -1024,6 +1036,40 @@ function ClientesTab() {
                 <span style={{ color: 'var(--text-dim)' }}>
                   {c.dias === 0 ? 'Hoje!' : c.dias === 1 ? 'Amanhã' : `Em ${c.dias} dias`} · {formatarAniversario(c.aniversario)}
                 </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {clientesInativos.length > 0 && (
+        <div
+          className="card"
+          style={{ marginBottom: 14, background: 'rgba(217,79,79,0.06)', border: '1px solid rgba(217,79,79,0.4)' }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8, color: 'var(--danger)', fontSize: 13, fontWeight: 700 }}>
+            <UserX size={15} /> Clientes inativos ({clientesInativos.length})
+          </div>
+          <p style={{ fontSize: 12, color: 'var(--text-dim)', marginBottom: 10 }}>
+            Sem visita há 60 dias ou mais. Uma mensagem rápida pode trazer de volta.
+          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {clientesInativos.map((c) => (
+              <div key={c.telefone} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                <div style={{ fontSize: 13 }}>
+                  <span style={{ fontWeight: 600 }}>{c.nome || c.telefone}</span>
+                  <span style={{ color: 'var(--text-dim)' }}> · sumiu há {c.diasInativo} dias</span>
+                </div>
+                <a
+                  href={`https://wa.me/${c.telefone.replace(/\D/g, '')}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="btn btn-secondary"
+                  style={{ padding: '6px 10px', flexShrink: 0 }}
+                  title="Chamar no WhatsApp"
+                >
+                  <Phone size={14} />
+                </a>
               </div>
             ))}
           </div>
@@ -1203,11 +1249,13 @@ function ServicosTab() {
   const [nome, setNome] = useState('');
   const [duracao, setDuracao] = useState('30');
   const [preco, setPreco] = useState('');
+  const [dias, setDias] = useState(null);
 
   const [editandoId, setEditandoId] = useState(null);
   const [editNome, setEditNome] = useState('');
   const [editDuracao, setEditDuracao] = useState('');
   const [editPreco, setEditPreco] = useState('');
+  const [editDias, setEditDias] = useState(null);
 
   useEffect(() => {
     const unsub = onSnapshot(collection(db, 'servicos'), (snap) => {
@@ -1224,10 +1272,12 @@ function ServicosTab() {
       duracaoMin: Number(duracao),
       preco: preco ? Number(preco) : null,
       ativo: true,
+      ...(dias && dias.length > 0 ? { diasPermitidos: dias } : {}),
     });
     setNome('');
     setDuracao('30');
     setPreco('');
+    setDias(null);
   }
 
   function iniciarEdicao(s) {
@@ -1235,6 +1285,7 @@ function ServicosTab() {
     setEditNome(s.nome);
     setEditDuracao(String(s.duracaoMin || ''));
     setEditPreco(s.preco != null ? String(s.preco) : '');
+    setEditDias(s.diasPermitidos || null);
   }
 
   async function salvarEdicao(id) {
@@ -1243,6 +1294,7 @@ function ServicosTab() {
       nome: editNome.trim(),
       duracaoMin: Number(editDuracao),
       preco: editPreco ? Number(editPreco) : null,
+      diasPermitidos: editDias && editDias.length > 0 ? editDias : deleteField(),
     });
     setEditandoId(null);
   }
@@ -1257,6 +1309,7 @@ function ServicosTab() {
           <input placeholder="Duração (min)" value={duracao} onChange={(e) => setDuracao(e.target.value.replace(/\D/g, ''))} inputMode="numeric" />
           <input placeholder="Preço R$ (opcional)" value={preco} onChange={(e) => setPreco(e.target.value.replace(/[^\d.]/g, ''))} inputMode="decimal" />
         </div>
+        {temPlano('pro') && <DiasSelector dias={dias} onChange={setDias} />}
         <button type="submit" className="btn btn-primary btn-block">
           <Plus size={18} /> Adicionar serviço
         </button>
@@ -1286,6 +1339,7 @@ function ServicosTab() {
                     inputMode="decimal"
                   />
                 </div>
+                {temPlano('pro') && <DiasSelector dias={editDias} onChange={setEditDias} />}
                 <div style={{ display: 'flex', gap: 8 }}>
                   <button type="button" className="btn btn-secondary" style={{ flex: 1 }} onClick={() => setEditandoId(null)}>
                     Cancelar
@@ -1299,6 +1353,9 @@ function ServicosTab() {
               <div key={s.id} className="card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <span style={{ opacity: s.ativo === false ? 0.5 : 1 }}>
                   {s.nome} · {s.duracaoMin} min{s.preco ? ` · R$ ${Number(s.preco).toFixed(2)}` : ''}
+                  {s.diasPermitidos && s.diasPermitidos.length > 0 && (
+                    <span style={{ color: 'var(--gold)' }}> · {formatarDiasPermitidos(s.diasPermitidos)}</span>
+                  )}
                 </span>
                 <div style={{ display: 'flex', gap: 8 }}>
                   <button type="button" className="btn btn-secondary" style={{ padding: '6px 10px' }} onClick={() => iniciarEdicao(s)}>
@@ -1319,6 +1376,53 @@ function ServicosTab() {
               </div>
             )
           )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function formatarDiasPermitidos(dias) {
+  const ordenados = [...dias].sort((a, b) => a - b);
+  return ordenados.map((d) => DIAS_SEMANA_ABREV[d]).join(', ');
+}
+
+function DiasSelector({ dias, onChange }) {
+  const restrito = dias !== null;
+  return (
+    <div>
+      <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: 'var(--text-dim)', marginBottom: 6 }}>
+        <input
+          type="checkbox"
+          checked={restrito}
+          onChange={(e) => onChange(e.target.checked ? [] : null)}
+          style={{ width: 'auto' }}
+        />
+        Disponível só em dias específicos
+      </label>
+      {restrito && (
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+          {DIAS_SEMANA_ABREV.map((label, dia) => {
+            const ativo = dias.includes(dia);
+            return (
+              <button
+                key={dia}
+                type="button"
+                onClick={() => onChange(ativo ? dias.filter((d) => d !== dia) : [...dias, dia])}
+                style={{
+                  padding: '6px 10px',
+                  borderRadius: 8,
+                  fontSize: 12,
+                  cursor: 'pointer',
+                  border: ativo ? '1px solid var(--gold)' : '1px solid var(--border)',
+                  background: ativo ? 'rgba(201,162,39,0.15)' : 'var(--panel-2)',
+                  color: ativo ? 'var(--gold)' : 'var(--text-dim)',
+                }}
+              >
+                {label}
+              </button>
+            );
+          })}
         </div>
       )}
     </div>
