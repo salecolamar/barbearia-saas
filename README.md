@@ -1,9 +1,6 @@
-# Guia completo — App de Agendamento da Barbearia
+# Guia — Implantar o app pra um novo cliente
 
-Passo a passo do zero até o app instalado no celular. Siga na ordem:
-**Firebase → GitHub → Vercel → Celular → Configurar a barbearia**.
-
-Cada cliente (barbearia) tem seu próprio Firebase e seu próprio deploy na Vercel — os dados de cada um ficam totalmente separados. O que muda entre eles é só a variável `VITE_PLANO` (veja o passo 3), que liga/desliga funções conforme o plano contratado:
+Este repositório é a base **compartilhada** dos três planos (Básico, Intermediário, Pro). Cada cliente (barbearia) ganha seu **próprio banco de dados** (Firebase) e seu **próprio link** (projeto na Vercel) — mas todos apontam pro mesmo código aqui. Isso quer dizer que uma melhoria feita aqui vale pra todo mundo automaticamente, sem precisar copiar nada.
 
 | Função | Básico | Intermediário | Pro |
 |---|---|---|---|
@@ -20,12 +17,21 @@ Cada cliente (barbearia) tem seu próprio Firebase e seu próprio deploy na Verc
 
 ---
 
-## 1. Firebase (banco de dados gratuito)
+## Checklist rápido (todo novo cliente)
 
-É onde ficam salvos os barbeiros, serviços, horários e agendamentos — compartilhado entre o celular do cliente e o painel do barbeiro.
+1. Criar um **projeto Firebase** novo pra esse cliente.
+2. Criar um **projeto Vercel** novo, importando **este mesmo repositório do GitHub**.
+3. Preencher as **Environment Variables** desse projeto (Firebase do cliente + `VITE_PLANO` do plano vendido).
+4. Deploy → pegar o link → instalar no celular → configurar a barbearia (`/admin`).
+
+Os passos detalhados de cada um estão abaixo.
+
+---
+
+## 1. Firebase (banco de dados desse cliente)
 
 1. Acesse **console.firebase.google.com** e clique em **"Adicionar projeto"**.
-2. Dê um nome (ex: `minha-barbearia`). Pode **desativar** o Google Analytics. Clique em **"Criar projeto"**.
+2. Dê um nome (ex: nome da barbearia). Pode **desativar** o Google Analytics. Clique em **"Criar projeto"**.
 3. No menu da esquerda, **Firestore Database** → **"Criar banco de dados"**.
    - Escolha **"Iniciar no modo de produção"**.
    - Região: `southamerica-east1 (São Paulo)`.
@@ -45,54 +51,48 @@ Cada cliente (barbearia) tem seu próprio Firebase e seu próprio deploy na Verc
    Clique em **Publicar**.
 
    > 🔒 Só quem abre o app (e recebe uma sessão anônima automática) consegue ler ou
-   > escrever no banco. Não é 100% à prova de tudo (alguém com conhecimento técnico
-   > avançado poderia acessar pelas ferramentas de desenvolvedor do navegador), mas é
-   > uma proteção sólida para o uso do dia a dia.
+   > escrever no banco. Não é 100% à prova de tudo, mas é uma proteção sólida
+   > pro uso do dia a dia.
 
 6. Tela inicial do projeto → ícone **`</>`** (Web) → nome qualquer (ex: `barbearia-web`) → **"Registrar app"** (não precisa marcar Hosting).
-7. Copie o bloco `const firebaseConfig = { ... }` que aparece.
-8. Abra `src/firebase.js` neste projeto e cole os valores reais no lugar dos valores de exemplo.
-9. **Cole essa mesma configuração também** no arquivo `public/firebase-messaging-sw.js` (dentro do `firebase.initializeApp({...})`) — ele roda separado e precisa dos mesmos dados.
+7. Copie o bloco `const firebaseConfig = { ... }` que aparece — você vai usar cada valor dele no passo 2, como variável de ambiente na Vercel.
 
-**Ver os dados depois:** Firestore Database → coleções `agendamentos`, `barbeiros`, `servicos`, `config`.
+**Ver os dados depois:** Firestore Database → coleções `agendamentos`, `barbeiros`, `servicos`, `config`, `clientes`.
 
 ---
 
-## 2. GitHub (guardar o código)
+## 2. Vercel (publicar o app desse cliente com um link)
 
-1. Crie uma conta grátis em **github.com**.
-2. **"New repository"** → nome (ex: `barbearia-app`) → **Public** → **"Create repository"**.
-3. Na página do repositório, clique em **"uploading an existing file"**.
-4. Abra a pasta deste projeto no computador, selecione tudo (Ctrl+A) e arraste para o navegador.
-5. Role até o fim e clique em **"Commit changes"**.
-
-### Sempre que eu mandar um arquivo atualizado
-1. No repositório, abra o arquivo que vai mudar → ícone de **lápis** (Edit).
-2. Selecione tudo (Ctrl+A), apague, cole o conteúdo novo.
-3. Role até o fim → **"Commit changes"**.
-4. A Vercel publica a versão nova sozinha, em ~1 minuto.
-
----
-
-## 3. Vercel (publicar o app com um link)
-
-1. Crie uma conta grátis em **vercel.com**, com **"Continue with GitHub"**.
-2. **"Add New… → Project"** → encontre o repositório (`barbearia-app`) → **"Import"**.
+1. Na conta da Vercel (mesma de sempre), **"Add New… → Project"**.
+2. Encontre o repositório **`barbearia-saas`** na lista e clique **"Import"**. Isso cria um **projeto novo e independente** na Vercel, mesmo usando o mesmo repositório.
 3. Confirme **Framework Preset = Vite**.
-4. Antes de clicar em Deploy, abra **Environment Variables** e adicione:
-   - `VITE_PLANO` → **obrigatória**. Define qual plano esse cliente comprou: `basico`, `intermediario` ou `pro`. Sem essa variável, o app assume `pro` (todas as funções ativas).
-   - `FIREBASE_SERVICE_ACCOUNT_KEY` e `REMINDER_SECRET` → só são necessárias se você for usar os **lembretes automáticos** (passo 6), disponíveis a partir do plano Intermediário; pode pular por agora e voltar depois.
-5. Clique em **"Deploy"**. Em 1–2 minutos você recebe um link tipo `barbearia-app.vercel.app`.
+4. Antes de clicar em Deploy, abra **Environment Variables** e adicione, uma por linha (valor à direita, nome à esquerda):
 
-> Trocar o plano de um cliente depois é só editar a variável `VITE_PLANO` nas Environment Variables da Vercel e clicar em **Redeploy** — não precisa mexer em código.
+   | Nome | Valor |
+   |---|---|
+   | `VITE_PLANO` | `basico`, `intermediario` ou `pro` — o plano que esse cliente comprou |
+   | `VITE_FIREBASE_API_KEY` | do `firebaseConfig` do passo 1 |
+   | `VITE_FIREBASE_AUTH_DOMAIN` | idem |
+   | `VITE_FIREBASE_PROJECT_ID` | idem |
+   | `VITE_FIREBASE_STORAGE_BUCKET` | idem |
+   | `VITE_FIREBASE_MESSAGING_SENDER_ID` | idem |
+   | `VITE_FIREBASE_APP_ID` | idem |
+
+   No plano Intermediário ou Pro, adicione também (opcional, só se for usar notificações — veja seção 5):
+   | `VITE_FIREBASE_VAPID_KEY` | chave VAPID do Cloud Messaging |
+   | `FIREBASE_SERVICE_ACCOUNT_KEY` | JSON da conta de serviço |
+   | `REMINDER_SECRET` | uma senha qualquer, inventada por você |
+
+5. Clique em **"Deploy"**. Em 1–2 minutos você recebe um link tipo `nome-do-cliente.vercel.app`. Pode renomear o projeto (Settings → General → Project Name) pra ficar mais fácil de identificar.
+
+> **Trocar o plano de um cliente depois** é só editar `VITE_PLANO` nas Environment Variables desse projeto na Vercel e clicar em **Deployments → ⋯ → Redeploy** — não precisa mexer em código nem no Firebase.
 
 ### Se o build falhar
-- **Erro de JSON no `package.json`**: algum arquivo foi upado errado — corrija pelo GitHub e a Vercel refaz o deploy sozinha.
-- **"vite: command not found"**: Settings → General → Build & Development Settings → confirme Framework Preset = Vite, sem Override vazio em Build/Install Command. Depois Deployments → ⋯ → **Redeploy**.
+- **"vite: command not found"**: Settings → General → Build & Development Settings → confirme Framework Preset = Vite. Depois Deployments → ⋯ → **Redeploy**.
 
 ---
 
-## 4. Instalar no celular
+## 3. Instalar no celular
 
 **Android (Chrome):** abra o link → menu (⋮) → **"Adicionar à tela inicial"**.
 
@@ -100,51 +100,42 @@ Cada cliente (barbearia) tem seu próprio Firebase e seu próprio deploy na Verc
 
 ---
 
-## 5. Configurar a barbearia (primeiro uso)
+## 4. Configurar a barbearia (primeiro uso)
 
 1. No celular ou computador, acesse `SEU-LINK.vercel.app/admin`.
-2. Na primeira vez, você vai criar o **nome da barbearia** e um **PIN** (para o painel do barbeiro ficar protegido). Guarde esse PIN.
+2. Na primeira vez, crie o **nome da barbearia** e um **PIN** (protege o painel do barbeiro). Guarde esse PIN.
 3. Nas abas do painel:
    - **Horários**: marque os dias em que a barbearia funciona e o horário de início/fim de cada um.
    - **Barbeiros**: cadastre o nome de cada barbeiro.
    - **Serviços**: cadastre cada serviço (nome, duração em minutos, preço opcional).
 4. Pronto — o app do cliente (`SEU-LINK.vercel.app`) já mostra os horários disponíveis de verdade.
 
-O painel do barbeiro (**Agenda**) mostra os horários marcados dia a dia, com opção de marcar como **Concluído** ou **Cancelar**.
-
 ---
 
-## 6. Notificações (opcional, um pouco mais técnico)
+## 5. Notificações (opcional — Intermediário e Pro)
 
 Duas coisas dependem da mesma configuração abaixo:
 - O **cliente** pode ativar um lembrete ao confirmar o agendamento (avisa ~30 min antes).
-- O **barbeiro** é avisado na hora, assim que um cliente marca um horário — basta clicar em **"Ativar notificações"** no canto superior do painel `/admin`, uma vez em cada aparelho que deve receber os avisos.
+- O **barbeiro** é avisado na hora, assim que um cliente marca um horário — basta clicar em **"Ativar notificações"** no canto superior do painel `/admin`.
 
-Para isso funcionar de verdade (mesmo com o app fechado), é preciso:
+Para isso funcionar de verdade (mesmo com o app fechado):
 
-1. **Gerar a chave de notificação (VAPID):** no Firebase Console → ⚙️ Configurações do projeto → aba **Cloud Messaging** → em "Certificados push da Web", clique em **Gerar par de chaves**. Copie o valor e cole em `VAPID_KEY` no arquivo `src/firebase.js`.
-2. **Gerar a chave do servidor:** Firebase Console → ⚙️ Configurações do projeto → aba **Contas de serviço** → **"Gerar nova chave privada"**. Baixa um arquivo `.json`.
-3. Abra esse `.json`, copie **todo o conteúdo**, e cole como valor da variável `FIREBASE_SERVICE_ACCOUNT_KEY` nas Environment Variables do projeto na Vercel (Settings → Environment Variables). Cole o JSON inteiro, sem editar.
-4. Defina também `REMINDER_SECRET` (uma senha qualquer, só você vai usar).
-5. Depois de salvar as variáveis, vá em **Deployments** → ⋯ do último deploy → **Redeploy**.
-6. Crie uma conta grátis em **cron-job.org**, e configure um "cronjob" novo:
+1. **Chave de notificação (VAPID):** Firebase Console → ⚙️ Configurações do projeto → aba **Cloud Messaging** → em "Certificados push da Web", **Gerar par de chaves**. Cole o valor em `VITE_FIREBASE_VAPID_KEY` nas Environment Variables da Vercel (passo 2).
+2. **Chave do servidor:** Firebase Console → ⚙️ Configurações do projeto → aba **Contas de serviço** → **"Gerar nova chave privada"**. Baixa um `.json`.
+3. Cole **todo o conteúdo** desse `.json` na variável `FIREBASE_SERVICE_ACCOUNT_KEY` da Vercel.
+4. Defina também `REMINDER_SECRET` (uma senha qualquer).
+5. Salve as variáveis e rode **Redeploy**.
+6. Crie uma conta grátis em **cron-job.org** e configure um "cronjob":
    - URL: `https://SEU-LINK.vercel.app/api/send-reminders?secret=SEU_REMINDER_SECRET`
-   - Intervalo: a cada 10 minutos (pra pegar o aviso perto dos 30 min antes, sem atraso grande).
-   - Salvar e ativar.
-7. (Opcional) Para o barbeiro ser avisado quando o aniversário de um cliente estiver chegando, crie **outro** cronjob no mesmo site:
+   - Intervalo: a cada 10 minutos.
+7. (Só no plano Pro) Outro cronjob pra aniversário de cliente:
    - URL: `https://SEU-LINK.vercel.app/api/send-birthday-alerts?secret=SEU_REMINDER_SECRET`
-   - Intervalo: 1 vez por dia (ex: todo dia às 08:00).
-   - Salvar e ativar.
+   - Intervalo: 1 vez por dia.
 
-O aviso ao barbeiro (passo 4 do fluxo) já funciona assim que os passos 1-5 acima estiverem prontos — não depende do cron-job.org, só o lembrete do cliente (~30 min antes) e o aviso de aniversário dependem dele.
-
-> Sem esse passo, o app funciona normalmente — só as notificações ficam desativadas. Dentro do painel `/admin`, a aba **Clientes** já mostra um aviso visual de "Aniversários chegando" mesmo sem configurar o cron.
+O aviso ao barbeiro de novo agendamento já funciona assim que os passos 1-5 estiverem prontos — só o lembrete do cliente e o aviso de aniversário dependem do cron-job.org.
 
 ---
 
-## Resumo do fluxo para qualquer mudança futura
+## Atualizações futuras (todos os clientes de uma vez)
 
-1. Eu mando o(s) arquivo(s) atualizado(s) aqui no chat.
-2. Você substitui no GitHub (editar arquivo → colar → Commit changes).
-3. A Vercel publica sozinha.
-4. Reabre o app no celular com internet — ele sempre busca a versão mais nova primeiro.
+Como todos os projetos na Vercel apontam pro mesmo repositório `barbearia-saas`, quando uma melhoria for enviada (`git push`) pro branch `main`, **a Vercel redeploya automaticamente todos os projetos dos clientes** em poucos minutos — não precisa fazer nada manualmente em cada um. Cada projeto mantém suas próprias variáveis (Firebase + plano), só o código muda.
