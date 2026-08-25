@@ -733,7 +733,7 @@ function FinanceiroTab() {
         </p>
       </div>
 
-      {porFormaPagamento.length > 0 && (
+      {temPlano('pro') && porFormaPagamento.length > 0 && (
         <div className="card" style={{ marginBottom: 14 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10, color: 'var(--gold)', fontSize: 13, fontWeight: 700 }}>
             <Wallet size={15} /> Por forma de pagamento

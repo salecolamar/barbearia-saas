@@ -4,10 +4,11 @@
 //
 // - basico: agendamento com múltiplos serviços, múltiplos barbeiros, recado
 //   na tela inicial.
-// - intermediario: + forma de pagamento, bloqueio de horário, financeiro,
+// - intermediario: + bloqueio de horário, financeiro (só o total recebido),
 //   notificações push.
-// - pro: + pacotes de serviço com restrição de dia, aba Clientes
-//   (histórico, aniversário, exportar contatos), aviso de aniversário.
+// - pro: + forma de pagamento (com detalhamento no financeiro), pacotes de
+//   serviço com restrição de dia, aba Clientes (histórico, clientes
+//   inativos, aniversário, exportar contatos).
 
 const NIVEIS = { basico: 0, intermediario: 1, pro: 2 };
 

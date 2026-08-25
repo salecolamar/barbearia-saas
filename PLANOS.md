@@ -28,15 +28,15 @@ Controlado por uma única variável, `VITE_PLANO`, definida por cliente na Verce
 
 ## Intermediário (+ tudo do Básico)
 
-- **Forma de pagamento**: cliente escolhe Dinheiro/Crédito/Débito/PIX ao confirmar
 - **Bloqueio de horário**: barbeiro bloqueia um intervalo (ex: almoço) direto no painel
-- **Aba Financeiro**: faturamento por dia/semana/mês, separado por forma de pagamento, serviços mais pedidos
+- **Aba Financeiro**: total recebido por dia/semana/mês e serviços mais pedidos — sem detalhar por forma de pagamento
 - **Notificações push**: barbeiro é avisado na hora de um novo agendamento; cliente pode ativar lembrete ~30 min antes
 
 ---
 
 ## Pro (+ tudo do Intermediário)
 
+- **Forma de pagamento**: cliente escolhe Dinheiro/Crédito/Débito/PIX ao confirmar, e o Financeiro detalha o total recebido em cada uma
 - **Aba Clientes**: lista de todo mundo que já agendou, busca por nome/telefone, exportar contatos (.vcf)
 - **Clientes inativos**: alerta automático de quem não volta há 60+ dias, com atalho direto pro WhatsApp — ferramenta de reengajamento
 - **Aniversário do cliente**: campo no cadastro + aviso no painel quando o aniversário de alguém tá chegando (e notificação push, se configurada)

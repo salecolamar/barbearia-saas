@@ -162,7 +162,7 @@ export default function Booking({ forcarCadastro = false }) {
   }
 
   async function confirmarAgendamento() {
-    if (temPlano('intermediario') && !formaPagamento) {
+    if (temPlano('pro') && !formaPagamento) {
       setErro('Escolha a forma de pagamento.');
       return;
     }
@@ -177,7 +177,7 @@ export default function Booking({ forcarCadastro = false }) {
         servicos: servicos.filter((s) => servicosSelecionadosIds.includes(s.id)).map((s) => ({ id: s.id, nome: s.nome })),
         valorItens: resumoServicos.itens,
         valorTotal: resumoServicos.total,
-        ...(temPlano('intermediario') ? { formaPagamento } : {}),
+        ...(temPlano('pro') ? { formaPagamento } : {}),
         data: dataStr,
         hora,
         clienteNome: nome.trim(),
@@ -332,7 +332,7 @@ export default function Booking({ forcarCadastro = false }) {
             <Resumo nome={nome} dataStr={dataStr} hora={hora} resumoServicos={calcularResumoServicos()} formaPagamento={formaPagamento} />
           </div>
 
-          {temPlano('intermediario') && (
+          {temPlano('pro') && (
             <div>
               <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--gold)', display: 'block', marginBottom: 8 }}>
                 Forma de pagamento

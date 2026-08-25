@@ -9,7 +9,7 @@ Este repositório é a base **compartilhada** dos três planos (Básico, Interme
 | Agendamento com múltiplos serviços | ✅ | ✅ | ✅ |
 | Múltiplos barbeiros | ✅ | ✅ | ✅ |
 | Recado na tela inicial | ✅ | ✅ | ✅ |
-| Forma de pagamento | – | ✅ | ✅ |
+| Forma de pagamento (com detalhamento no financeiro) | – | – | ✅ |
 | Bloqueio de horário | – | ✅ | ✅ |
 | Aba Financeiro | – | ✅ | ✅ |
 | Notificações push (novo agendamento + lembrete) | – | ✅ | ✅ |
