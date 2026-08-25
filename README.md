@@ -2,6 +2,8 @@
 
 Este repositório é a base **compartilhada** dos três planos (Básico, Intermediário, Pro). Cada cliente (barbearia) ganha seu **próprio banco de dados** (Firebase) e seu **próprio link** (projeto na Vercel) — mas todos apontam pro mesmo código aqui. Isso quer dizer que uma melhoria feita aqui vale pra todo mundo automaticamente, sem precisar copiar nada.
 
+> A lista detalhada e sempre atualizada do que entra em cada plano está em [`PLANOS.md`](./PLANOS.md). A tabela abaixo é só um resumo rápido.
+
 | Função | Básico | Intermediário | Pro |
 |---|---|---|---|
 | Agendamento com múltiplos serviços | ✅ | ✅ | ✅ |
