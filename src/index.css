@@ -1,0 +1,214 @@
+:root {
+  --bg: #141414;
+  --panel: #1d1d1d;
+  --panel-2: #262626;
+  --border: #333333;
+  --text: #f2f0ea;
+  --text-dim: #a3a09a;
+  --gold: #c9a227;
+  --gold-dim: #8a6f1c;
+  --danger: #d94f4f;
+  --success: #4caf7d;
+  --radius: 14px;
+
+  font: 16px/1.45 -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  color-scheme: dark;
+  color: var(--text);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+}
+
+#root {
+  min-height: 100dvh;
+  max-width: 520px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+h1, h2, h3 {
+  margin: 0;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+}
+
+p {
+  margin: 0;
+}
+
+button {
+  font: inherit;
+}
+
+input, select, textarea {
+  font: inherit;
+  color: var(--text);
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 14px;
+  width: 100%;
+}
+
+input:focus, select:focus, textarea:focus, button:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 1px;
+}
+
+.btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: none;
+  border-radius: 12px;
+  padding: 14px 18px;
+  font-weight: 600;
+  font-size: 15px;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.1s;
+}
+
+.btn:active {
+  transform: scale(0.98);
+}
+
+.btn-primary {
+  background: var(--gold);
+  color: #1a1400;
+}
+
+.btn-secondary {
+  background: var(--panel-2);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+.btn-danger {
+  background: rgba(217, 79, 79, 0.15);
+  color: var(--danger);
+  border: 1px solid rgba(217, 79, 79, 0.4);
+}
+
+.btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.btn-block {
+  width: 100%;
+}
+
+.card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.chip-gold {
+  background: rgba(201, 162, 39, 0.15);
+  color: var(--gold);
+}
+
+.chip-danger {
+  background: rgba(217, 79, 79, 0.15);
+  color: var(--danger);
+}
+
+.chip-success {
+  background: rgba(76, 175, 125, 0.15);
+  color: var(--success);
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 999px;
+}
+
+.home-stack {
+  gap: 7px;
+}
+
+.home-hero {
+  padding: 14px 20px;
+}
+
+.home-logo {
+  width: 104px;
+  height: 104px;
+  margin: 0 auto 10px;
+}
+
+.home-card {
+  padding: 16px;
+}
+
+.home-recado {
+  padding: 8px 12px;
+}
+
+.home-recado p {
+  font-size: 12px;
+}
+
+.home-mini-btn {
+  padding: 9px 4px;
+  font-size: 12px;
+}
+
+/* Telas baixas (ex: iPhone SE): encolhe só o necessário pra caber sem rolar. */
+@media (max-height: 700px) {
+  .home-stack {
+    gap: 2px;
+  }
+  .home-hero {
+    padding: 6px 20px;
+  }
+  .home-logo {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 4px;
+  }
+  .home-card {
+    padding: 4px 12px;
+  }
+  .home-recado {
+    padding: 6px 10px;
+  }
+  .home-recado p {
+    font-size: 11px;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .home-mini-btn {
+    padding: 6px 4px;
+    font-size: 11px;
+  }
+}
