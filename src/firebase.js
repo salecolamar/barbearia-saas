@@ -2,19 +2,19 @@ import { initializeApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
 import { getAuth, signInAnonymously } from 'firebase/auth';
 
-// Substitua pelos valores reais do seu projeto Firebase (veja o GUIA.md).
+// Substitua pelos valores reais do projeto Firebase deste cliente (veja o README.md).
 const firebaseConfig = {
-  apiKey: 'AIzaSyC7Jvao7L3b1zpXnve9NPfbOB0zS2Ju08I',
-  authDomain: 'barbearia-1778e.firebaseapp.com',
-  projectId: 'barbearia-1778e',
-  storageBucket: 'barbearia-1778e.firebasestorage.app',
-  messagingSenderId: '992952424450',
-  appId: '1:992952424450:web:6d2cf757b3c15cb595af1b',
+  apiKey: 'SUA_API_KEY_AQUI',
+  authDomain: 'seu-projeto.firebaseapp.com',
+  projectId: 'seu-projeto',
+  storageBucket: 'seu-projeto.firebasestorage.app',
+  messagingSenderId: 'SEU_SENDER_ID',
+  appId: 'SEU_APP_ID',
 };
 
 // Chave pública (VAPID) do Cloud Messaging, usada para lembretes por notificação.
 // Firebase Console → Configurações do projeto → Cloud Messaging → Certificados push da Web.
-export const VAPID_KEY = 'BGfLpEgtHZKsYPkA2hjo-JOO2JeBkxV43pV4S7KCE-Y0X_ic3P9grZOQJR4RtPo9qg9d1x7U48uUIhcQe4rHjps';
+export const VAPID_KEY = 'SUA_VAPID_KEY_AQUI';
 
 export const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);

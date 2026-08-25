@@ -3,6 +3,7 @@ import { addDoc, collection, doc, getDoc, getDocs, query, serverTimestamp, setDo
 import { Banknote, Bell, Check, ChevronLeft, Clock, CreditCard, QrCode, Scissors, User, Wallet } from 'lucide-react';
 import { db } from '../firebase';
 import { pedirTokenNotificacao } from '../notifications';
+import { temPlano } from '../plano';
 import { getClienteSalvo, salvarCliente } from '../utils/storage';
 import { dateToStr, escolherBarbeiroDisponivel, getHorariosComStatus, proximosDias, strToDate } from '../utils/slots';
 import DayStrip from '../components/DayStrip';
@@ -90,7 +91,7 @@ export default function Booking({ forcarCadastro = false }) {
       {
         nome: nome.trim(),
         telefone: telefone.trim(),
-        ...(aniversario ? { aniversario } : {}),
+        ...(temPlano('pro') && aniversario ? { aniversario } : {}),
         atualizadoEm: serverTimestamp(),
       },
       { merge: true }
@@ -121,6 +122,10 @@ export default function Booking({ forcarCadastro = false }) {
   }
 
   function alternarServico(servico) {
+    if (!temPlano('intermediario')) {
+      setServicosSelecionadosIds((prev) => (prev.includes(servico.id) ? [] : [servico.id]));
+      return;
+    }
     setServicosSelecionadosIds((prev) =>
       prev.includes(servico.id) ? prev.filter((id) => id !== servico.id) : [...prev, servico.id]
     );
@@ -161,7 +166,7 @@ export default function Booking({ forcarCadastro = false }) {
   }
 
   async function confirmarAgendamento() {
-    if (!formaPagamento) {
+    if (temPlano('intermediario') && !formaPagamento) {
       setErro('Escolha a forma de pagamento.');
       return;
     }
@@ -176,7 +181,7 @@ export default function Booking({ forcarCadastro = false }) {
         servicos: servicos.filter((s) => servicosSelecionadosIds.includes(s.id)).map((s) => ({ id: s.id, nome: s.nome })),
         valorItens: resumoServicos.itens,
         valorTotal: resumoServicos.total,
-        formaPagamento,
+        ...(temPlano('intermediario') ? { formaPagamento } : {}),
         data: dataStr,
         hora,
         clienteNome: nome.trim(),
@@ -268,12 +273,14 @@ export default function Booking({ forcarCadastro = false }) {
               inputMode="tel"
               required
             />
-            <div>
-              <label style={{ fontSize: 12, color: 'var(--text-dim)', display: 'block', marginBottom: 4 }}>
-                Aniversário (opcional)
-              </label>
-              <input type="date" value={aniversario} onChange={(e) => setAniversario(e.target.value)} />
-            </div>
+            {temPlano('pro') && (
+              <div>
+                <label style={{ fontSize: 12, color: 'var(--text-dim)', display: 'block', marginBottom: 4 }}>
+                  Aniversário (opcional)
+                </label>
+                <input type="date" value={aniversario} onChange={(e) => setAniversario(e.target.value)} />
+              </div>
+            )}
             <button type="submit" className="btn btn-primary btn-block">
               Continuar
             </button>
@@ -329,12 +336,14 @@ export default function Booking({ forcarCadastro = false }) {
             <Resumo nome={nome} dataStr={dataStr} hora={hora} resumoServicos={calcularResumoServicos()} formaPagamento={formaPagamento} />
           </div>
 
-          <div>
-            <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--gold)', display: 'block', marginBottom: 8 }}>
-              Forma de pagamento
-            </span>
-            <FormaPagamentoSelect selecionado={formaPagamento} onSelect={setFormaPagamento} />
-          </div>
+          {temPlano('intermediario') && (
+            <div>
+              <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--gold)', display: 'block', marginBottom: 8 }}>
+                Forma de pagamento
+              </span>
+              <FormaPagamentoSelect selecionado={formaPagamento} onSelect={setFormaPagamento} />
+            </div>
+          )}
 
           {erro && <p style={{ color: 'var(--danger)', fontSize: 13 }}>{erro}</p>}
           <button type="button" className="btn btn-primary btn-block" onClick={confirmarAgendamento} disabled={salvando}>
@@ -366,21 +375,22 @@ export default function Booking({ forcarCadastro = false }) {
             <Resumo nome={nome} dataStr={dataStr} hora={hora} resumoServicos={calcularResumoServicos()} formaPagamento={formaPagamento} />
           </div>
 
-          {!lembreteAtivo ? (
-            <button
-              type="button"
-              className="btn btn-secondary btn-block"
-              style={{ marginTop: 16 }}
-              onClick={ativarLembrete}
-              disabled={ativandoLembrete}
-            >
-              <Bell size={16} /> {ativandoLembrete ? 'Ativando…' : 'Avisar quando estiver perto do horário'}
-            </button>
-          ) : (
-            <p style={{ marginTop: 16, color: 'var(--success)', fontSize: 14 }}>
-              <Bell size={14} style={{ verticalAlign: -2 }} /> Lembrete ativado.
-            </p>
-          )}
+          {temPlano('intermediario') &&
+            (!lembreteAtivo ? (
+              <button
+                type="button"
+                className="btn btn-secondary btn-block"
+                style={{ marginTop: 16 }}
+                onClick={ativarLembrete}
+                disabled={ativandoLembrete}
+              >
+                <Bell size={16} /> {ativandoLembrete ? 'Ativando…' : 'Avisar quando estiver perto do horário'}
+              </button>
+            ) : (
+              <p style={{ marginTop: 16, color: 'var(--success)', fontSize: 14 }}>
+                <Bell size={14} style={{ verticalAlign: -2 }} /> Lembrete ativado.
+              </p>
+            ))}
 
           <button type="button" className="btn btn-primary btn-block" style={{ marginTop: 10 }} onClick={novoAgendamento}>
             Agendar outro horário

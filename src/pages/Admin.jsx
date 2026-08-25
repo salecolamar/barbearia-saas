@@ -46,6 +46,7 @@ import {
 } from 'lucide-react';
 import { db } from '../firebase';
 import { pedirTokenNotificacao } from '../notifications';
+import { temPlano } from '../plano';
 import {
   DIAS_SEMANA,
   DIAS_SEMANA_ABREV,
@@ -195,7 +196,7 @@ function Dashboard({ config, setConfig }) {
           <h1 style={{ fontSize: 19 }}>{config.nomeBarbearia}</h1>
           <p style={{ fontSize: 12, color: 'var(--text-dim)' }}>Painel do barbeiro</p>
         </div>
-        <NotificacoesBarbeiro />
+        {temPlano('intermediario') && <NotificacoesBarbeiro />}
       </header>
 
       <div style={{ padding: '0 16px 14px' }}>
@@ -206,8 +207,8 @@ function Dashboard({ config, setConfig }) {
 
       <div style={{ padding: '0 16px' }}>
         {aba === 'agendados' && <AgendaTab />}
-        {aba === 'financeiro' && <FinanceiroTab />}
-        {aba === 'clientes' && <ClientesTab />}
+        {aba === 'financeiro' && temPlano('intermediario') && <FinanceiroTab />}
+        {aba === 'clientes' && temPlano('pro') && <ClientesTab />}
         {aba === 'barbeiros' && <BarbeirosTab />}
         {aba === 'servicos' && <ServicosTab />}
         {aba === 'horarios' && <HorariosTab config={config} setConfig={setConfig} />}
@@ -228,8 +229,12 @@ function Dashboard({ config, setConfig }) {
         }}
       >
         <TabBtn ativo={aba === 'agendados'} onClick={() => setAba('agendados')} icone={<Calendar size={19} />} label="Agendados" />
-        <TabBtn ativo={aba === 'financeiro'} onClick={() => setAba('financeiro')} icone={<Wallet size={19} />} label="Financeiro" />
-        <TabBtn ativo={aba === 'clientes'} onClick={() => setAba('clientes')} icone={<UserRound size={19} />} label="Clientes" />
+        {temPlano('intermediario') && (
+          <TabBtn ativo={aba === 'financeiro'} onClick={() => setAba('financeiro')} icone={<Wallet size={19} />} label="Financeiro" />
+        )}
+        {temPlano('pro') && (
+          <TabBtn ativo={aba === 'clientes'} onClick={() => setAba('clientes')} icone={<UserRound size={19} />} label="Clientes" />
+        )}
         <TabBtn ativo={aba === 'barbeiros'} onClick={() => setAba('barbeiros')} icone={<Users size={19} />} label="Barbeiros" />
         <TabBtn ativo={aba === 'servicos'} onClick={() => setAba('servicos')} icone={<Scissors size={19} />} label="Serviços" />
         <TabBtn ativo={aba === 'horarios'} onClick={() => setAba('horarios')} icone={<Settings size={19} />} label="Horários" />
@@ -412,7 +417,7 @@ function AgendaTab() {
         </button>
       </div>
 
-      {!bloqueando ? (
+      {temPlano('intermediario') && (!bloqueando ? (
         <button
           type="button"
           className="btn btn-secondary btn-block"
@@ -460,7 +465,7 @@ function AgendaTab() {
             </button>
           </div>
         </form>
-      )}
+      ))}
 
       {carregando ? (
         <p style={{ color: 'var(--text-dim)' }}>Carregando…</p>
@@ -981,7 +986,7 @@ function ClientesTab() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'clientes-sandro-barber.vcf';
+    a.download = 'clientes-barbearia.vcf';
     a.click();
     URL.revokeObjectURL(url);
   }
@@ -1166,9 +1171,11 @@ function BarbeirosTab() {
     return unsub;
   }, []);
 
+  const limiteAtingido = !temPlano('intermediario') && (lista?.length || 0) >= 1;
+
   async function adicionar(e) {
     e.preventDefault();
-    if (!nome.trim()) return;
+    if (!nome.trim() || limiteAtingido) return;
     await addDoc(collection(db, 'barbeiros'), { nome: nome.trim(), ativo: true });
     setNome('');
   }
@@ -1181,12 +1188,18 @@ function BarbeirosTab() {
       onToggleAtivo={(b) => updateDoc(doc(db, 'barbeiros', b.id), { ativo: !b.ativo })}
       onExcluir={(b) => deleteDoc(doc(db, 'barbeiros', b.id))}
     >
-      <form onSubmit={adicionar} style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
-        <input placeholder="Nome do barbeiro" value={nome} onChange={(e) => setNome(e.target.value)} />
-        <button type="submit" className="btn btn-primary" style={{ padding: '0 16px' }}>
-          <Plus size={18} />
-        </button>
-      </form>
+      {limiteAtingido ? (
+        <p style={{ fontSize: 13, color: 'var(--text-dim)', marginBottom: 14 }}>
+          Seu plano permite apenas 1 barbeiro. Fale com a gente pra fazer upgrade e cadastrar mais.
+        </p>
+      ) : (
+        <form onSubmit={adicionar} style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
+          <input placeholder="Nome do barbeiro" value={nome} onChange={(e) => setNome(e.target.value)} />
+          <button type="submit" className="btn btn-primary" style={{ padding: '0 16px' }}>
+            <Plus size={18} />
+          </button>
+        </form>
+      )}
     </ListaCadastro>
   );
 }
@@ -1453,17 +1466,21 @@ function PerfilTab({ config, setConfig }) {
         <label style={labelStyle}>Nome da barbearia</label>
         <input value={nome} onChange={(e) => { setNome(e.target.value); setSalvo(false); }} placeholder="Nome da barbearia" />
 
-        <label style={labelStyle}>Recado (opcional)</label>
-        <textarea
-          value={recado}
-          onChange={(e) => { setRecado(e.target.value); setSalvo(false); }}
-          placeholder="Ex: Fechado no feriado de 25/12. Deixe em branco pra não mostrar nada."
-          rows={2}
-          style={{ resize: 'vertical' }}
-        />
-        <p style={{ fontSize: 11, color: 'var(--text-dim)', marginTop: -6 }}>
-          Só aparece na tela inicial do cliente enquanto tiver algo escrito aqui.
-        </p>
+        {temPlano('intermediario') && (
+          <>
+            <label style={labelStyle}>Recado (opcional)</label>
+            <textarea
+              value={recado}
+              onChange={(e) => { setRecado(e.target.value); setSalvo(false); }}
+              placeholder="Ex: Fechado no feriado de 25/12. Deixe em branco pra não mostrar nada."
+              rows={2}
+              style={{ resize: 'vertical' }}
+            />
+            <p style={{ fontSize: 11, color: 'var(--text-dim)', marginTop: -6 }}>
+              Só aparece na tela inicial do cliente enquanto tiver algo escrito aqui.
+            </p>
+          </>
+        )}
 
         <label style={labelStyle}>Apresentação (opcional)</label>
         <textarea

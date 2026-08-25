@@ -3,6 +3,22 @@
 Passo a passo do zero até o app instalado no celular. Siga na ordem:
 **Firebase → GitHub → Vercel → Celular → Configurar a barbearia**.
 
+Cada cliente (barbearia) tem seu próprio Firebase e seu próprio deploy na Vercel — os dados de cada um ficam totalmente separados. O que muda entre eles é só a variável `VITE_PLANO` (veja o passo 3), que liga/desliga funções conforme o plano contratado:
+
+| Função | Básico | Intermediário | Pro |
+|---|---|---|---|
+| Agendamento (1 serviço por vez) | ✅ | ✅ | ✅ |
+| Múltiplos serviços por agendamento | – | ✅ | ✅ |
+| Forma de pagamento | – | ✅ | ✅ |
+| Múltiplos barbeiros | – | ✅ | ✅ |
+| Bloqueio de horário | – | ✅ | ✅ |
+| Aba Financeiro | – | ✅ | ✅ |
+| Recado na tela inicial | – | ✅ | ✅ |
+| Notificações push (novo agendamento + lembrete) | – | ✅ | ✅ |
+| Pacotes de serviço com restrição de dia | – | – | ✅ |
+| Aba Clientes (histórico, exportar contatos) | – | – | ✅ |
+| Aniversário do cliente + aviso | – | – | ✅ |
+
 ---
 
 ## 1. Firebase (banco de dados gratuito)
@@ -64,10 +80,12 @@ Passo a passo do zero até o app instalado no celular. Siga na ordem:
 1. Crie uma conta grátis em **vercel.com**, com **"Continue with GitHub"**.
 2. **"Add New… → Project"** → encontre o repositório (`barbearia-app`) → **"Import"**.
 3. Confirme **Framework Preset = Vite**.
-4. Antes de clicar em Deploy, abra **Environment Variables** e adicione (só são necessárias se você for usar os **lembretes automáticos** — passo 6; pode pular por agora e voltar depois):
-   - `FIREBASE_SERVICE_ACCOUNT_KEY` → veja como gerar no passo 6.
-   - `REMINDER_SECRET` → invente uma senha longa qualquer (ex: `barb3aria-lembrete-9x7z`).
+4. Antes de clicar em Deploy, abra **Environment Variables** e adicione:
+   - `VITE_PLANO` → **obrigatória**. Define qual plano esse cliente comprou: `basico`, `intermediario` ou `pro`. Sem essa variável, o app assume `pro` (todas as funções ativas).
+   - `FIREBASE_SERVICE_ACCOUNT_KEY` e `REMINDER_SECRET` → só são necessárias se você for usar os **lembretes automáticos** (passo 6), disponíveis a partir do plano Intermediário; pode pular por agora e voltar depois.
 5. Clique em **"Deploy"**. Em 1–2 minutos você recebe um link tipo `barbearia-app.vercel.app`.
+
+> Trocar o plano de um cliente depois é só editar a variável `VITE_PLANO` nas Environment Variables da Vercel e clicar em **Redeploy** — não precisa mexer em código.
 
 ### Se o build falhar
 - **Erro de JSON no `package.json`**: algum arquivo foi upado errado — corrija pelo GitHub e a Vercel refaz o deploy sozinha.

@@ -3,7 +3,7 @@ import { doc, getDoc } from 'firebase/firestore';
 import { AtSign, Calendar, Clock, Download, MapPin, Megaphone, Phone, Share, X } from 'lucide-react';
 import { db } from '../firebase';
 import { formatarHorarios } from '../utils/slots';
-import logo from '../assets/logo.jpg';
+import logo from '../assets/logo.png';
 
 const TOQUES_PARA_PAINEL = 5;
 const JANELA_TOQUES_MS = 1500;
