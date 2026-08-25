@@ -7,13 +7,12 @@ Cada cliente (barbearia) tem seu próprio Firebase e seu próprio deploy na Verc
 
 | Função | Básico | Intermediário | Pro |
 |---|---|---|---|
-| Agendamento (1 serviço por vez) | ✅ | ✅ | ✅ |
-| Múltiplos serviços por agendamento | – | ✅ | ✅ |
+| Agendamento com múltiplos serviços | ✅ | ✅ | ✅ |
+| Múltiplos barbeiros | ✅ | ✅ | ✅ |
+| Recado na tela inicial | ✅ | ✅ | ✅ |
 | Forma de pagamento | – | ✅ | ✅ |
-| Múltiplos barbeiros | – | ✅ | ✅ |
 | Bloqueio de horário | – | ✅ | ✅ |
 | Aba Financeiro | – | ✅ | ✅ |
-| Recado na tela inicial | – | ✅ | ✅ |
 | Notificações push (novo agendamento + lembrete) | – | ✅ | ✅ |
 | Pacotes de serviço com restrição de dia | – | – | ✅ |
 | Aba Clientes (histórico, exportar contatos) | – | – | ✅ |

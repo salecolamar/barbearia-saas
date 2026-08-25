@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { collection, doc, getDocs, query, updateDoc, where } from 'firebase/firestore';
 import { CalendarX2, Pencil, Search, X } from 'lucide-react';
 import { db } from '../firebase';
-import { temPlano } from '../plano';
 import { getClienteSalvo, salvarCliente } from '../utils/storage';
 import { dateToStr, escolherBarbeiroDisponivel, strToDate } from '../utils/slots';
 import ServiceSelect from '../components/ServiceSelect';
@@ -66,10 +65,6 @@ export default function MyAppointments() {
   }
 
   function alternarServico(servico) {
-    if (!temPlano('intermediario')) {
-      setSelecionadosIds((prev) => (prev.includes(servico.id) ? [] : [servico.id]));
-      return;
-    }
     setSelecionadosIds((prev) => (prev.includes(servico.id) ? prev.filter((id) => id !== servico.id) : [...prev, servico.id]));
   }
 

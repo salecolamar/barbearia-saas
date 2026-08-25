@@ -122,10 +122,6 @@ export default function Booking({ forcarCadastro = false }) {
   }
 
   function alternarServico(servico) {
-    if (!temPlano('intermediario')) {
-      setServicosSelecionadosIds((prev) => (prev.includes(servico.id) ? [] : [servico.id]));
-      return;
-    }
     setServicosSelecionadosIds((prev) =>
       prev.includes(servico.id) ? prev.filter((id) => id !== servico.id) : [...prev, servico.id]
     );

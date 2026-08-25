@@ -2,9 +2,10 @@
 // ao cliente. Definido uma vez no deploy de cada barbearia, pela variável de
 // ambiente VITE_PLANO na Vercel (não é algo que o barbeiro troca sozinho).
 //
-// - basico: agendamento simples, 1 serviço por vez, 1 barbeiro.
-// - intermediario: + múltiplos serviços, forma de pagamento, múltiplos
-//   barbeiros, bloqueio de horário, financeiro, notificações push.
+// - basico: agendamento com múltiplos serviços, múltiplos barbeiros, recado
+//   na tela inicial.
+// - intermediario: + forma de pagamento, bloqueio de horário, financeiro,
+//   notificações push.
 // - pro: + pacotes de serviço com restrição de dia, aba Clientes
 //   (histórico, aniversário, exportar contatos), aviso de aniversário.
 

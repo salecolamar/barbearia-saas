@@ -1171,11 +1171,9 @@ function BarbeirosTab() {
     return unsub;
   }, []);
 
-  const limiteAtingido = !temPlano('intermediario') && (lista?.length || 0) >= 1;
-
   async function adicionar(e) {
     e.preventDefault();
-    if (!nome.trim() || limiteAtingido) return;
+    if (!nome.trim()) return;
     await addDoc(collection(db, 'barbeiros'), { nome: nome.trim(), ativo: true });
     setNome('');
   }
@@ -1188,18 +1186,12 @@ function BarbeirosTab() {
       onToggleAtivo={(b) => updateDoc(doc(db, 'barbeiros', b.id), { ativo: !b.ativo })}
       onExcluir={(b) => deleteDoc(doc(db, 'barbeiros', b.id))}
     >
-      {limiteAtingido ? (
-        <p style={{ fontSize: 13, color: 'var(--text-dim)', marginBottom: 14 }}>
-          Seu plano permite apenas 1 barbeiro. Fale com a gente pra fazer upgrade e cadastrar mais.
-        </p>
-      ) : (
-        <form onSubmit={adicionar} style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
-          <input placeholder="Nome do barbeiro" value={nome} onChange={(e) => setNome(e.target.value)} />
-          <button type="submit" className="btn btn-primary" style={{ padding: '0 16px' }}>
-            <Plus size={18} />
-          </button>
-        </form>
-      )}
+      <form onSubmit={adicionar} style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
+        <input placeholder="Nome do barbeiro" value={nome} onChange={(e) => setNome(e.target.value)} />
+        <button type="submit" className="btn btn-primary" style={{ padding: '0 16px' }}>
+          <Plus size={18} />
+        </button>
+      </form>
     </ListaCadastro>
   );
 }
@@ -1466,21 +1458,17 @@ function PerfilTab({ config, setConfig }) {
         <label style={labelStyle}>Nome da barbearia</label>
         <input value={nome} onChange={(e) => { setNome(e.target.value); setSalvo(false); }} placeholder="Nome da barbearia" />
 
-        {temPlano('intermediario') && (
-          <>
-            <label style={labelStyle}>Recado (opcional)</label>
-            <textarea
-              value={recado}
-              onChange={(e) => { setRecado(e.target.value); setSalvo(false); }}
-              placeholder="Ex: Fechado no feriado de 25/12. Deixe em branco pra não mostrar nada."
-              rows={2}
-              style={{ resize: 'vertical' }}
-            />
-            <p style={{ fontSize: 11, color: 'var(--text-dim)', marginTop: -6 }}>
-              Só aparece na tela inicial do cliente enquanto tiver algo escrito aqui.
-            </p>
-          </>
-        )}
+        <label style={labelStyle}>Recado (opcional)</label>
+        <textarea
+          value={recado}
+          onChange={(e) => { setRecado(e.target.value); setSalvo(false); }}
+          placeholder="Ex: Fechado no feriado de 25/12. Deixe em branco pra não mostrar nada."
+          rows={2}
+          style={{ resize: 'vertical' }}
+        />
+        <p style={{ fontSize: 11, color: 'var(--text-dim)', marginTop: -6 }}>
+          Só aparece na tela inicial do cliente enquanto tiver algo escrito aqui.
+        </p>
 
         <label style={labelStyle}>Apresentação (opcional)</label>
         <textarea
