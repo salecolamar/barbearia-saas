@@ -1,11 +1,9 @@
-// Gera public/firebase-messaging-sw.js a partir das mesmas variáveis de
-// ambiente VITE_FIREBASE_* usadas em src/firebase.js. Roda automaticamente
-// antes de "npm run dev" e "npm run build" (veja package.json).
-//
-// O service worker é um arquivo estático puro — o Vite não processa
-// import.meta.env nele — então essa é a forma de cada cliente (com seu
-// próprio projeto Firebase) ter o service worker certo, sem precisar de um
-// código diferente por cliente.
+// Gera os dois service workers do app (public/firebase-messaging-sw.js e
+// public/sw.js) a cada build. Roda automaticamente antes de "npm run dev" e
+// "npm run build" (veja package.json). São arquivos estáticos puros — o
+// Vite não processa import.meta.env neles — então essa é a forma de cada
+// cliente (com seu próprio projeto Firebase) ter o service worker certo,
+// e de forçar o navegador a detectar uma versão nova do app a cada deploy.
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 
 // Na Vercel, as Environment Variables já chegam como process.env de verdade.
@@ -55,3 +53,48 @@ messaging.onBackgroundMessage((payload) => {
 
 writeFileSync(new URL('../public/firebase-messaging-sw.js', import.meta.url), conteudo);
 console.log('public/firebase-messaging-sw.js gerado.');
+
+// ---------------------------------------------------------------------
+// public/sw.js (cache do app / suporte offline) — o conteúdo do arquivo
+// precisa MUDAR a cada deploy pra o navegador perceber que existe uma
+// versão nova do service worker e reinstalar. Como o código dele nunca
+// mudava sozinho, o app instalado na tela inicial podia ficar preso numa
+// versão antiga por dias. Agora ele carrega um carimbo de versão novo em
+// todo build.
+const versao = Date.now().toString(36);
+const swConteudo = `// Gerado automaticamente por scripts/generate-sw.mjs a cada build — o
+// carimbo de versão abaixo muda sempre, pra forçar o navegador a detectar
+// que existe uma versão nova do app e atualizar sozinho.
+const CACHE = 'barbearia-${versao}';
+const APP_SHELL = ['/', '/index.html', '/manifest.json'];
+
+self.addEventListener('install', (event) => {
+  event.waitUntil(caches.open(CACHE).then((c) => c.addAll(APP_SHELL)));
+  self.skipWaiting();
+});
+
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    caches.keys().then((keys) => Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k))))
+  );
+  self.clients.claim();
+});
+
+// Network-first: sempre busca a versão mais nova quando há internet,
+// e só usa o cache (modo offline) se a rede falhar.
+self.addEventListener('fetch', (event) => {
+  if (event.request.method !== 'GET') return;
+  event.respondWith(
+    fetch(event.request, { cache: 'no-store' })
+      .then((res) => {
+        const copy = res.clone();
+        caches.open(CACHE).then((c) => c.put(event.request, copy));
+        return res;
+      })
+      .catch(() => caches.match(event.request))
+  );
+});
+`;
+
+writeFileSync(new URL('../public/sw.js', import.meta.url), swConteudo);
+console.log('public/sw.js gerado (versão ' + versao + ').');

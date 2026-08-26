@@ -26,5 +26,6 @@ dist-ssr
 .vercel
 .env*
 
-# Gerado por scripts/generate-sw.mjs a partir das env vars VITE_FIREBASE_*
+# Gerados por scripts/generate-sw.mjs a cada build
 public/firebase-messaging-sw.js
+public/sw.js
