@@ -8,7 +8,7 @@
 //   notificações push.
 // - pro: + forma de pagamento (com detalhamento no financeiro), pacotes de
 //   serviço com restrição de dia, aba Clientes (histórico, clientes
-//   inativos, aniversário, exportar contatos).
+//   inativos, aniversário, exportar contatos), programa de fidelidade.
 
 const NIVEIS = { basico: 0, intermediario: 1, pro: 2 };
 

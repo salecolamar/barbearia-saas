@@ -16,6 +16,7 @@ Este repositório é a base **compartilhada** dos três planos (Básico, Interme
 | Pacotes de serviço com restrição de dia | – | – | ✅ |
 | Aba Clientes (histórico, exportar contatos) | – | – | ✅ |
 | Aniversário do cliente + aviso | – | – | ✅ |
+| Programa de fidelidade | – | – | ✅ |
 
 ---
 

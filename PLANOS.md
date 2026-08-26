@@ -41,6 +41,7 @@ Controlado por uma única variável, `VITE_PLANO`, definida por cliente na Verce
 - **Clientes inativos**: alerta automático de quem não volta há 60+ dias, com atalho direto pro WhatsApp — ferramenta de reengajamento
 - **Aniversário do cliente**: campo no cadastro + aviso no painel quando o aniversário de alguém tá chegando (e notificação push, se configurada)
 - **Pacotes de serviço com restrição de dia** (ex: um combo que só vale de segunda a quarta) — configurado direto no painel, na aba Serviços
+- **Programa de fidelidade**: barbeiro define no Perfil quantas visitas com presença confirmada valem uma recompensa (e o texto da recompensa, opcional). A aba Clientes mostra o progresso de cada um com uma barrinha, e o próprio cliente vê o andamento em "Meus horários". Reinicia sozinho a cada ciclo completo.
 
 ---
 

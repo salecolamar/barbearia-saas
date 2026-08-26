@@ -26,6 +26,7 @@ import {
   Clock,
   CreditCard,
   Download,
+  Gift,
   Lock,
   Pencil,
   Phone,
@@ -209,7 +210,7 @@ function Dashboard({ config, setConfig }) {
       <div style={{ padding: '0 16px' }}>
         {aba === 'agendados' && <AgendaTab />}
         {aba === 'financeiro' && temPlano('intermediario') && <FinanceiroTab />}
-        {aba === 'clientes' && temPlano('pro') && <ClientesTab />}
+        {aba === 'clientes' && temPlano('pro') && <ClientesTab config={config} />}
         {aba === 'barbeiros' && <BarbeirosTab />}
         {aba === 'servicos' && <ServicosTab />}
         {aba === 'horarios' && <HorariosTab config={config} setConfig={setConfig} />}
@@ -892,7 +893,16 @@ function formatarAniversario(aniversario) {
   return new Date(2000, mes - 1, dia).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long' });
 }
 
-function ClientesTab() {
+// Progresso da fidelidade dentro do ciclo atual (reinicia a cada vez que
+// completa a quantidade configurada).
+function progressoFidelidade(presencas, qtd) {
+  if (!qtd || qtd <= 0) return null;
+  const noCiclo = presencas % qtd;
+  const completo = presencas > 0 && noCiclo === 0;
+  return { atual: completo ? qtd : noCiclo, qtd, completo, ciclos: Math.floor(presencas / qtd) };
+}
+
+function ClientesTab({ config }) {
   const [clientes, setClientes] = useState(null);
   const [busca, setBusca] = useState('');
   const [editandoAniversarioTel, setEditandoAniversarioTel] = useState(null);
@@ -918,13 +928,17 @@ function ClientesTab() {
             nome: a.clienteNome,
             telefone: a.clienteTelefone,
             visitas: 0,
+            presencas: 0,
             gasto: 0,
             primeira: a.data,
             ultima: a.data,
           };
           atual.nome = a.clienteNome || atual.nome;
           if (a.status !== 'cancelado') atual.visitas += 1;
-          if (a.status === 'concluido') atual.gasto += a.valorTotal || 0;
+          if (a.status === 'concluido') {
+            atual.gasto += a.valorTotal || 0;
+            atual.presencas += 1;
+          }
           if (a.data < atual.primeira) atual.primeira = a.data;
           if (a.data > atual.ultima) atual.ultima = a.data;
           mapa.set(a.clienteTelefone, atual);
@@ -932,7 +946,7 @@ function ClientesTab() {
       // Garante que clientes que só fizeram cadastro apareçam mesmo sem agendamento ainda.
       clientesCadastro.forEach((c, telefone) => {
         if (!mapa.has(telefone)) {
-          mapa.set(telefone, { nome: c.nome || null, telefone, visitas: 0, gasto: 0, primeira: null, ultima: '0000-00-00' });
+          mapa.set(telefone, { nome: c.nome || null, telefone, visitas: 0, presencas: 0, gasto: 0, primeira: null, ultima: '0000-00-00' });
         }
       });
       mapa.forEach((atual, telefone) => {
@@ -1195,6 +1209,35 @@ function ClientesTab() {
                     </button>
                   )}
                 </div>
+
+                {config?.fidelidadeQtd > 0 && (() => {
+                  const p = progressoFidelidade(c.presencas || 0, config.fidelidadeQtd);
+                  return (
+                    <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid var(--border)' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+                        <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: p.completo ? 'var(--success)' : 'var(--text-dim)' }}>
+                          <Gift size={12} />
+                          {p.completo
+                            ? `Pronta pra resgatar${config.fidelidadeRecompensa ? `: ${config.fidelidadeRecompensa}` : ''}!`
+                            : `${p.atual}/${p.qtd} pra fidelidade${config.fidelidadeRecompensa ? ` (${config.fidelidadeRecompensa})` : ''}`}
+                        </span>
+                        {p.ciclos > 0 && (
+                          <span style={{ fontSize: 11, color: 'var(--text-dim)' }}>{p.ciclos}x resgatada</span>
+                        )}
+                      </div>
+                      <div style={{ height: 6, borderRadius: 999, background: 'var(--panel-2)', overflow: 'hidden' }}>
+                        <div
+                          style={{
+                            height: '100%',
+                            width: `${(p.atual / p.qtd) * 100}%`,
+                            background: p.completo ? 'var(--success)' : 'var(--gold)',
+                            borderRadius: 999,
+                          }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
             ))}
           </div>
@@ -1531,6 +1574,8 @@ function PerfilTab({ config, setConfig }) {
   const [endereco, setEndereco] = useState(config.endereco || '');
   const [whatsapp, setWhatsapp] = useState(config.whatsapp || '');
   const [instagram, setInstagram] = useState(config.instagram || '');
+  const [fidelidadeQtd, setFidelidadeQtd] = useState(config.fidelidadeQtd ? String(config.fidelidadeQtd) : '');
+  const [fidelidadeRecompensa, setFidelidadeRecompensa] = useState(config.fidelidadeRecompensa || '');
   const [salvando, setSalvando] = useState(false);
   const [salvo, setSalvo] = useState(false);
 
@@ -1544,6 +1589,12 @@ function PerfilTab({ config, setConfig }) {
       endereco: endereco.trim(),
       whatsapp: whatsapp.trim(),
       instagram: instagram.trim(),
+      ...(temPlano('pro')
+        ? {
+            fidelidadeQtd: fidelidadeQtd ? Number(fidelidadeQtd) : null,
+            fidelidadeRecompensa: fidelidadeRecompensa.trim(),
+          }
+        : {}),
     };
     await updateDoc(doc(db, 'config', 'geral'), dados);
     setConfig((prev) => ({ ...prev, ...dados }));
@@ -1604,6 +1655,26 @@ function PerfilTab({ config, setConfig }) {
           onChange={(e) => { setInstagram(e.target.value); setSalvo(false); }}
           placeholder="Ex: https://www.instagram.com/seuusuario"
         />
+
+        {temPlano('pro') && (
+          <>
+            <label style={labelStyle}>Fidelidade — visitas para a recompensa</label>
+            <input
+              value={fidelidadeQtd}
+              onChange={(e) => { setFidelidadeQtd(e.target.value.replace(/\D/g, '')); setSalvo(false); }}
+              placeholder="Ex: 10"
+              inputMode="numeric"
+            />
+            <input
+              value={fidelidadeRecompensa}
+              onChange={(e) => { setFidelidadeRecompensa(e.target.value); setSalvo(false); }}
+              placeholder="Recompensa (opcional, ex: Corte grátis)"
+            />
+            <p style={{ fontSize: 11, color: 'var(--text-dim)', marginTop: -6 }}>
+              Deixe o número em branco pra desativar a fidelidade. O contador conta as visitas com presença confirmada.
+            </p>
+          </>
+        )}
 
         <button type="submit" className="btn btn-primary btn-block" style={{ marginTop: 6 }} disabled={salvando}>
           {salvando ? 'Salvando…' : salvo ? 'Salvo ✓' : 'Salvar perfil'}

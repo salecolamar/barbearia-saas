@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
-import { collection, doc, getDocs, query, updateDoc, where } from 'firebase/firestore';
-import { CalendarX2, Pencil, Search, X } from 'lucide-react';
+import { collection, doc, getDoc, getDocs, query, updateDoc, where } from 'firebase/firestore';
+import { CalendarX2, Gift, Pencil, Search, X } from 'lucide-react';
 import { db } from '../firebase';
+import { temPlano } from '../plano';
 import { getClienteSalvo, salvarCliente } from '../utils/storage';
 import { dateToStr, escolherBarbeiroDisponivel, strToDate } from '../utils/slots';
 import ServiceSelect from '../components/ServiceSelect';
@@ -19,6 +20,7 @@ export default function MyAppointments() {
   const [selecionadosIds, setSelecionadosIds] = useState([]);
   const [salvandoServicos, setSalvandoServicos] = useState(false);
   const [erroServicos, setErroServicos] = useState('');
+  const [config, setConfig] = useState(null);
 
   async function buscar(e) {
     e?.preventDefault();
@@ -42,6 +44,9 @@ export default function MyAppointments() {
     getDocs(collection(db, 'barbeiros')).then((snap) => {
       setBarbeiros(snap.docs.map((d) => ({ id: d.id, ...d.data() })).filter((b) => b.ativo !== false));
     });
+    if (temPlano('pro')) {
+      getDoc(doc(db, 'config', 'geral')).then((snap) => setConfig(snap.exists() ? snap.data() : null));
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -121,6 +126,14 @@ export default function MyAppointments() {
         </p>
       )}
 
+      {!carregando && agendamentos.length > 0 && config?.fidelidadeQtd > 0 && (
+        <FidelidadeCard
+          presencas={agendamentos.filter((a) => a.status === 'concluido').length}
+          qtd={config.fidelidadeQtd}
+          recompensa={config.fidelidadeRecompensa}
+        />
+      )}
+
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
         {agendamentos.map((a) => {
           const passado = a.data < hojeStr || (a.data === hojeStr && false);
@@ -198,6 +211,41 @@ export default function MyAppointments() {
           );
         })}
       </div>
+    </div>
+  );
+}
+
+function FidelidadeCard({ presencas, qtd, recompensa }) {
+  const noCiclo = presencas % qtd;
+  const completo = presencas > 0 && noCiclo === 0;
+  const atual = completo ? qtd : noCiclo;
+
+  return (
+    <div
+      className="card"
+      style={{ marginBottom: 16, background: 'rgba(201,162,39,0.08)', border: '1px solid var(--gold)' }}
+    >
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8, color: 'var(--gold)', fontSize: 13, fontWeight: 700 }}>
+        <Gift size={15} /> Sua fidelidade
+      </div>
+      <p style={{ fontSize: 13, color: completo ? 'var(--success)' : 'var(--text-dim)', marginBottom: 8 }}>
+        {completo
+          ? `Você já pode resgatar${recompensa ? `: ${recompensa}` : ' sua recompensa'}! 🎉`
+          : `Faltam ${qtd - atual} visita${qtd - atual !== 1 ? 's' : ''} pra ${recompensa || 'sua recompensa'}`}
+      </p>
+      <div style={{ height: 8, borderRadius: 999, background: 'var(--panel-2)', overflow: 'hidden' }}>
+        <div
+          style={{
+            height: '100%',
+            width: `${(atual / qtd) * 100}%`,
+            background: completo ? 'var(--success)' : 'var(--gold)',
+            borderRadius: 999,
+          }}
+        />
+      </div>
+      <p style={{ fontSize: 11, color: 'var(--text-dim)', marginTop: 6, textAlign: 'right' }}>
+        {atual}/{qtd}
+      </p>
     </div>
   );
 }
