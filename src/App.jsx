@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Calendar, Home as HomeIcon, ListChecks, Scissors } from 'lucide-react';
+import { Home as HomeIcon, ListChecks, Scissors } from 'lucide-react';
 import { authReady } from './firebase';
 import HomePage from './pages/Home';
 import Booking from './pages/Booking';
@@ -89,15 +89,6 @@ export default function App() {
         <button type="button" onClick={() => setAba('inicio')} style={navBtnStyle(aba === 'inicio')}>
           <HomeIcon size={20} />
           Início
-        </button>
-        <button
-          type="button"
-          aria-disabled="true"
-          title='Toque em "Agendar horário" na tela de início'
-          style={{ ...navBtnStyle(aba === 'agendar'), cursor: 'default' }}
-        >
-          <Calendar size={20} />
-          Agendar
         </button>
         <button type="button" onClick={() => setAba('meus')} style={navBtnStyle(aba === 'meus')}>
           <ListChecks size={20} />
