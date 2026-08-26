@@ -81,7 +81,11 @@ export default function MyAppointments() {
 
     const snap = await getDocs(query(collection(db, 'agendamentos'), where('data', '==', a.data)));
     const agendamentosDoDia = snap.docs.filter((d) => d.id !== a.id).map((d) => d.data());
-    const barbeiro = escolherBarbeiroDisponivel({ hora: a.hora, duracaoMin: duracaoTotal, barbeiros, agendamentosDoDia });
+    // Tenta manter o mesmo barbeiro que o cliente já tinha; só troca se ele não couber mais.
+    const barbeiroAtual = barbeiros.filter((b) => b.id === a.barbeiroId);
+    const barbeiro =
+      escolherBarbeiroDisponivel({ hora: a.hora, duracaoMin: duracaoTotal, barbeiros: barbeiroAtual, agendamentosDoDia }) ||
+      escolherBarbeiroDisponivel({ hora: a.hora, duracaoMin: duracaoTotal, barbeiros, agendamentosDoDia });
     if (!barbeiro) {
       setErroServicos('Esse serviço não cabe mais nesse horário. Escolha outros serviços ou cancele e marque outro horário.');
       setSalvandoServicos(false);

@@ -36,7 +36,10 @@ export default function Booking({ forcarCadastro = false }) {
   const [lembreteAtivo, setLembreteAtivo] = useState(false);
   const [agendamentoId, setAgendamentoId] = useState(null);
   const [barbeiroEscolhido, setBarbeiroEscolhido] = useState(null);
+  const [barbeiroPreferidoId, setBarbeiroPreferidoId] = useState(null);
   const [formaPagamento, setFormaPagamento] = useState('');
+
+  const barbeirosConsiderados = barbeiroPreferidoId ? barbeiros.filter((b) => b.id === barbeiroPreferidoId) : barbeiros;
 
   useEffect(() => {
     async function carregar() {
@@ -63,7 +66,7 @@ export default function Booking({ forcarCadastro = false }) {
     if (!config || barbeiros.length === 0) return;
     buscarHorarios(dataStr);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [config, barbeiros, dataStr]);
+  }, [config, barbeiros, dataStr, barbeiroPreferidoId]);
 
   async function buscarHorarios(str) {
     setHora(null);
@@ -75,7 +78,7 @@ export default function Booking({ forcarCadastro = false }) {
       duracaoMin: config.intervaloMin || 30,
       horariosConfig: config.horarios,
       intervaloMin: config.intervaloMin || 30,
-      barbeiros,
+      barbeiros: barbeirosConsiderados,
       agendamentosDoDia,
     });
     setHorarios(lista);
@@ -106,7 +109,7 @@ export default function Booking({ forcarCadastro = false }) {
     const barbeiro = escolherBarbeiroDisponivel({
       hora: h,
       duracaoMin: config.intervaloMin || 30,
-      barbeiros,
+      barbeiros: barbeirosConsiderados,
       agendamentosDoDia,
     });
     setCarregandoHorarios(false);
@@ -147,7 +150,7 @@ export default function Booking({ forcarCadastro = false }) {
     const barbeiro = escolherBarbeiroDisponivel({
       hora,
       duracaoMin: duracaoTotal,
-      barbeiros,
+      barbeiros: barbeirosConsiderados,
       agendamentosDoDia,
     });
     setCarregandoHorarios(false);
@@ -220,6 +223,7 @@ export default function Booking({ forcarCadastro = false }) {
     setAgendamentoId(null);
     setLembreteAtivo(false);
     setFormaPagamento('');
+    setBarbeiroPreferidoId(null);
     setPasso('horario');
   }
 
@@ -288,6 +292,28 @@ export default function Booking({ forcarCadastro = false }) {
         <Etapa titulo="Escolha o horário" icone={<Clock size={18} />}>
           <DayStrip dias={dias} dataStr={dataStr} onSelect={setDataStr} />
 
+          {barbeiros.length > 1 && (
+            <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 2 }}>
+              <button
+                type="button"
+                onClick={() => setBarbeiroPreferidoId(null)}
+                style={pillBarbeiroStyle(barbeiroPreferidoId === null)}
+              >
+                Sem preferência
+              </button>
+              {barbeiros.map((b) => (
+                <button
+                  key={b.id}
+                  type="button"
+                  onClick={() => setBarbeiroPreferidoId(b.id)}
+                  style={pillBarbeiroStyle(barbeiroPreferidoId === b.id)}
+                >
+                  {b.nome}
+                </button>
+              ))}
+            </div>
+          )}
+
           {erro && <p style={{ color: 'var(--danger)', fontSize: 13, marginTop: -4 }}>{erro}</p>}
 
           <div style={{ marginTop: 4 }}>
@@ -329,7 +355,14 @@ export default function Booking({ forcarCadastro = false }) {
       {passo === 'revisao' && (
         <Etapa titulo="Confirmar agendamento" icone={<Check size={18} />}>
           <div className="card">
-            <Resumo nome={nome} dataStr={dataStr} hora={hora} resumoServicos={calcularResumoServicos()} formaPagamento={formaPagamento} />
+            <Resumo
+              nome={nome}
+              dataStr={dataStr}
+              hora={hora}
+              resumoServicos={calcularResumoServicos()}
+              formaPagamento={formaPagamento}
+              barbeiroNome={barbeiros.length > 1 ? barbeiroEscolhido?.nome : null}
+            />
           </div>
 
           {temPlano('pro') && (
@@ -368,7 +401,14 @@ export default function Booking({ forcarCadastro = false }) {
           <p style={{ color: 'var(--text-dim)', marginTop: 6 }}>Te esperamos na barbearia.</p>
 
           <div className="card" style={{ marginTop: 20, textAlign: 'left' }}>
-            <Resumo nome={nome} dataStr={dataStr} hora={hora} resumoServicos={calcularResumoServicos()} formaPagamento={formaPagamento} />
+            <Resumo
+              nome={nome}
+              dataStr={dataStr}
+              hora={hora}
+              resumoServicos={calcularResumoServicos()}
+              formaPagamento={formaPagamento}
+              barbeiroNome={barbeiros.length > 1 ? barbeiroEscolhido?.nome : null}
+            />
           </div>
 
           {temPlano('intermediario') &&
@@ -449,13 +489,14 @@ function FormaPagamentoSelect({ selecionado, onSelect }) {
   );
 }
 
-function Resumo({ nome, dataStr, hora, resumoServicos, formaPagamento }) {
+function Resumo({ nome, dataStr, hora, resumoServicos, formaPagamento, barbeiroNome }) {
   const d = dataStr ? new Date(`${dataStr}T00:00:00`) : null;
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 6, fontSize: 14 }}>
       <Linha label="Nome" valor={nome} />
       <Linha label="Data" valor={d ? d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long' }) : ''} />
       <Linha label="Horário" valor={hora} />
+      {barbeiroNome && <Linha label="Barbeiro" valor={barbeiroNome} />}
       {formaPagamento && <Linha label="Pagamento" valor={formaPagamento} />}
       {resumoServicos && resumoServicos.itens.length > 0 && (
         <>
@@ -482,6 +523,21 @@ function Linha({ label, valor }) {
       <span style={{ fontWeight: 600 }}>{valor}</span>
     </div>
   );
+}
+
+function pillBarbeiroStyle(ativo) {
+  return {
+    flexShrink: 0,
+    padding: '8px 14px',
+    borderRadius: 999,
+    fontSize: 13,
+    fontWeight: 600,
+    cursor: 'pointer',
+    whiteSpace: 'nowrap',
+    border: ativo ? '1px solid var(--gold)' : '1px solid var(--border)',
+    background: ativo ? 'rgba(201,162,39,0.12)' : 'var(--panel)',
+    color: ativo ? 'var(--gold)' : 'var(--text-dim)',
+  };
 }
 
 const backBtnStyle = {
