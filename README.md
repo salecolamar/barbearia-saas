@@ -142,3 +142,13 @@ O aviso ao barbeiro de novo agendamento já funciona assim que os passos 1-5 est
 ## Atualizações futuras (todos os clientes de uma vez)
 
 Como todos os projetos na Vercel apontam pro mesmo repositório `barbearia-saas`, quando uma melhoria for enviada (`git push`) pro branch `main`, **a Vercel redeploya automaticamente todos os projetos dos clientes** em poucos minutos — não precisa fazer nada manualmente em cada um. Cada projeto mantém suas próprias variáveis (Firebase + plano), só o código muda.
+
+---
+
+## Modo demonstração (`VITE_PLANO=demo`)
+
+Existe um quarto valor especial pra `VITE_PLANO`, só pra um deploy de demonstração pra clientes em potencial: `demo`. Nesse (e só nesse) valor, aparece um botão flutuante no canto da tela (cliente e painel `/admin`) que deixa trocar entre Básico/Intermediário/Pro **na hora**, sem precisar de três links diferentes.
+
+- Funciona guardando a escolha no navegador de quem está usando (não afeta outros visitantes nem o banco de dados) e recarregando a página.
+- **Só existe nesse valor de `VITE_PLANO`** — em qualquer deploy de cliente de verdade (`basico`, `intermediario`, `pro`), o botão não aparece e não tem como ativar. Isso é proposital: um cliente do plano Básico não pode "se promover" sozinho trocando algo no navegador.
+- Serve só pra apresentação ao vivo. Os três links de demonstração fixos (um por plano) continuam existindo e funcionando normalmente, pra quando você já sabe de antemão qual plano vai mostrar.

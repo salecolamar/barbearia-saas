@@ -5,6 +5,7 @@ import HomePage from './pages/Home';
 import Booking from './pages/Booking';
 import MyAppointments from './pages/MyAppointments';
 import Admin from './pages/Admin';
+import DemoPlanoSwitcher from './components/DemoPlanoSwitcher';
 
 const abaInicial = new URLSearchParams(window.location.search).get('tab') === 'agendar' ? 'agendar' : 'inicio';
 const forcarNovoCliente = new URLSearchParams(window.location.search).get('novo') === '1';
@@ -44,7 +45,14 @@ export default function App() {
     );
   }
 
-  if (isAdmin) return <Admin />;
+  if (isAdmin) {
+    return (
+      <>
+        <Admin />
+        <DemoPlanoSwitcher />
+      </>
+    );
+  }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100dvh' }}>
@@ -96,6 +104,8 @@ export default function App() {
           Meus horários
         </button>
       </nav>
+
+      <DemoPlanoSwitcher />
     </div>
   );
 }
