@@ -10,6 +10,7 @@ Controlado por uma única variável, `VITE_PLANO`, definida por cliente na Verce
 
 **App do cliente**
 - Agendamento com múltiplos serviços no mesmo horário
+- Escolher um barbeiro específico (aparece automaticamente quando tem mais de um cadastrado; "sem preferência" continua disponível) — a disponibilidade de horário mostrada já é a daquele barbeiro
 - Bloqueio automático do horário e dos barbeiros ocupados (inclusive pela duração somada dos serviços escolhidos)
 - Cancelar ou editar os serviços de um agendamento já feito ("Meus horários")
 - Selo de "cliente novo" / "Xª visita" pro barbeiro identificar clientes recorrentes
